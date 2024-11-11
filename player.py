@@ -1,8 +1,9 @@
 import pygame
 
 class player(pygame.sprite.Sprite):
-    def __init__(self, pos, images, tiles):
+    def __init__(self, pos, images, tiles, gamevar):
         super().__init__()
+        self.variables = gamevar
         self.tiles = tiles
         self.images = images
         self.image = images[0]
@@ -20,6 +21,8 @@ class player(pygame.sprite.Sprite):
         if (self.rect.top <= pygame.display.Info().current_h / 4 and self.velocity > 0):
             for tile in self.tiles:
                 tile.rect.y += self.velocity
+            self.variables["camY"] += self.velocity
+            print(self.variables["camY"])
         else:
             self.rect.y -= self.velocity
         self.velocity -= 0.5

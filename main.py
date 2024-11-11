@@ -4,18 +4,19 @@ from spritesheet import SpriteLoader
 from tile import tile
 from player import player
 
-
 pygame.init()
+camY = 0
 screen_info = pygame.display.Info()
-
 size = (width, height) = (screen_info.current_w, screen_info.current_h)
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 color = (100,100,200)
 tiles = pygame.sprite.Group()
+spawn = True
+gameVars = {"camY":camY}
 #508x288
 def get_images():
-  global playerimg, play
+  global playerimg, play, grass
   sprite_sheet = SpriteLoader("grass block.png")
   grass = sprite_sheet.get_image(0, 0, 70, 35)
   playerspritesheet = SpriteLoader("player.png")
@@ -26,10 +27,13 @@ def get_images():
   images.append(playerimg)
   images.append(playerimg2)
   images.append(playerimg3)
-  for i in range(20):
-    til = tile((random.randint(0, width), random.randint(0, height)), grass)
+  score = 0
+  play = player((random.randint(0, width), random.randint(0, height)), images, tiles, gameVars)
+  #something like render distance (1 screen worth)
+def spawntiles(bottomY, topY):
+  for i in range(10):
+    til = tile((random.randint(0, width), random.randint(topY, bottomY)), grass)
     tiles.add(til)
-  play = player((random.randint(0, width), random.randint(0, height)), images, tiles)
   '''
   for i in range(4):
     for j in range(2):
@@ -45,7 +49,7 @@ def get_images():
 play = None
 
 def main():
-  global play
+  global play, gameVars, spawn
   get_images()
   while True:  
     clock.tick(60)
@@ -59,5 +63,11 @@ def main():
     play.draw(screen)
     play.update()
     pygame.display.flip()
+    if (gameVars["camY"] % 500 == 0 and spawn == True):
+      spawntiles(pygame.display.Info().current_h * -1, pygame.display.Info().current_h * -2)
+      spawn = False
+    else:
+      spawn = True
+
 if __name__ == "__main__":
   main()

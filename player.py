@@ -17,7 +17,11 @@ class player(pygame.sprite.Sprite):
         #self.rect.move_ip(self.speed)
         frame = pygame.time.get_ticks() // 60 % 3
         self.image = self.images[frame]
-        self.rect.y -= self.velocity
+        if (self.rect.top <= pygame.display.Info().current_h / 4 and self.velocity > 0):
+            for tile in self.tiles:
+                tile.rect.y += self.velocity
+        else:
+            self.rect.y -= self.velocity
         self.velocity -= 0.5
         if (self.rect.bottom >= pygame.display.Info().current_h):
             self.velocity = 0
@@ -31,13 +35,16 @@ class player(pygame.sprite.Sprite):
         keys=pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
             if (self.rect.bottom >= pygame.display.Info().current_h or self.ground):
-                self.velocity += 20
-                self.ground = False
+                if (self.velocity == 0):
+                    self.velocity += 20
+                    self.ground = False
         if keys[pygame.K_a]:
             self.rect.x -= 5
         if keys[pygame.K_d]:
             self.rect.x += 5
+        
             
+    #camera boundry thing idea: pygame.display.Info().current_h - pygame.display.Info().current_h / 4
     '''
     if(self.rect.left > self.screen_info.current_w):
       self.rect.right = 0

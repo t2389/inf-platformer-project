@@ -14,11 +14,14 @@ color = (100,100,200)
 tiles = pygame.sprite.Group()
 spawn = True
 gameVars = {"camY":camY}
+score = 0
+difficulty = 25
 #508x288
+sprite_sheet = SpriteLoader("grass block.png")
+grass = sprite_sheet.get_image(0, 0, 70, 35)
+
 def get_images():
   global playerimg, play, grass
-  sprite_sheet = SpriteLoader("grass block.png")
-  grass = sprite_sheet.get_image(0, 0, 70, 35)
   playerspritesheet = SpriteLoader("player.png")
   playerimg= playerspritesheet.get_image(0, 0, 70, 97)
   playerimg2= playerspritesheet.get_image(75, 0, 70, 97)
@@ -29,11 +32,17 @@ def get_images():
   images.append(playerimg3)
   score = 0
   play = player((random.randint(0, width), random.randint(0, height)), images, tiles, gameVars)
+  first = tile((play.rect.x + 35, play.rect.bottom + 30), grass, tiles, True)
+  tiles.add(first)
   #something like render distance (1 screen worth)
 def spawntiles(bottomY, topY):
-  for i in range(10):
-    til = tile((random.randint(0, width), random.randint(topY, bottomY)), grass)
+  global difficulty
+  for i in range(25 - difficulty):
+    til = tile((random.randint(0, width), random.randint(topY, bottomY)), grass, tiles, False)
     tiles.add(til)
+  if difficulty < 15:
+    difficulty += 1
+
   '''
   for i in range(4):
     for j in range(2):
@@ -47,6 +56,12 @@ def spawntiles(bottomY, topY):
       guy_images[direction + str(i)] = guy_image
 '''
 play = None
+def scoring():
+  score = int(gameVars["camY"])
+  pygame.font.init()
+  text = pygame.font.Font('font.ttf', 30)
+  text_surface = text.render(f"{score}", False, (0, 0, 0))
+  screen.blit(text_surface, (100,100))
 
 def main():
   global play, gameVars, spawn
@@ -60,14 +75,20 @@ def main():
     keys = pygame.key.get_pressed()
     screen.fill(color)
     tiles.draw(screen)
+    for tile in tiles:
+      tile.update()
     play.draw(screen)
     play.update()
+    scoring()
     pygame.display.flip()
-    if (gameVars["camY"] % 500 == 0 and spawn == True):
+    if (gameVars["camY"] % 500 <= 20 and spawn == True):
       spawntiles(pygame.display.Info().current_h * -1, pygame.display.Info().current_h * -2)
       spawn = False
     else:
-      spawn = True
-
+      if gameVars["camY"] % 500 > 20:
+        spawn = True
+spawntiles(pygame.display.Info().current_h, 0)
+spawntiles(0, pygame.display.Info().current_h * -1)
+spawntiles(pygame.display.Info().current_h * -1, pygame.display.Info().current_h * -2)
 if __name__ == "__main__":
   main()

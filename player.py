@@ -57,10 +57,13 @@ class player(pygame.sprite.Sprite):
             self.rect.x += 5
     def endscreen(self):
         if self.rect.top >= pygame.display.Info().current_h:
-            print("gameovers")
+            if self.variables["enter"] == 1:
+                self.highscore(int(self.variables["camY"]))
             self.gameovers = True
             self.kill()
-            
+            print("gameovers")
+
+                    
 
             
     #camera boundry thing idea: pygame.display.Info().current_h - pygame.display.Info().current_h / 4

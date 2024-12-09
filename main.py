@@ -13,9 +13,14 @@ clock = pygame.time.Clock()
 color = (100,100,200)
 tiles = pygame.sprite.Group()
 spawn = True
-gameVars = {"camY":camY}
+enter = 0
+names = []
+gameVars = {"camY":camY, "names":names, "enter":enter}
 score = 0
-difficulty = 25
+difficulty = 0
+repeat = 0
+highscores = []
+place = 1
 #508x288
 sprite_sheet = SpriteLoader("grass block.png")
 grass = sprite_sheet.get_image(0, 0, 70, 35)
@@ -56,19 +61,33 @@ def spawntiles(bottomY, topY):
       guy_images[direction + str(i)] = guy_image
 '''
 play = None
+def highscore(score):
+    s = ''.join(gameVars["names"])
+    highscores = open("score.txt", "a")
+    highscores.write(s + f"{score}")
+    highscores.write("\n")
+    highscores.close()
 def scoring():
   score = int(gameVars["camY"])
   pygame.font.init()
   text = pygame.font.Font('font.ttf', 30)
   text_surface = text.render(f"{score}", False, (0, 0, 0))
   screen.blit(text_surface, (100,100))
-
+def die():
+  pygame.font.init()
+  text = pygame.font.Font('font.ttf', 100)
+  text_surface = text.render("gameover", False, (255, 0, 0))
+  screen.blit(text_surface, (pygame.display.Info().current_w / 2.7,pygame.display.Info().current_h / 4))
 def main():
-  global play, gameVars, spawn
+  global play, gameVars, spawn, repeat, enter
   get_images()
   while True:  
     clock.tick(60)
     for event in pygame.event.get():
+      if event.type == KEYDOWN and play.gameovers == True and enter == 0:
+        if event.key == K_RETURN:
+          enter = 1
+        names.append(event.unicode)
       if event.type == QUIT:
         sys.exit()
 
@@ -80,6 +99,25 @@ def main():
     play.draw(screen)
     play.update()
     scoring()
+    if play.gameovers == True:
+      die()
+      s = ''.join(names)
+      pygame.font.init()
+      text = pygame.font.Font('font.ttf', 30)
+      text_surface = text.render(s, False, (0, 0, 0)) 
+      screen.blit(text_surface, (pygame.display.Info().current_w / 1.5, pygame.display.Info().current_h / 2))
+      for i in range(0, min(len(highscores), 9)):
+          pygame.font.init()
+          text = pygame.font.Font('font.ttf', 30)
+          text_surface = text.render(f"{i + 1}. {highscores[i]}", False, (0, 0, 0)) 
+          screen.blit(text_surface, (pygame.display.Info().current_w / 2.2, pygame.display.Info().current_h / 4 + i*40))
+    if repeat == 0 and play.gameovers == True:
+      scores = open("score.txt", "r")
+      for line in scores:
+        highscores.append(int(line[:-1]))
+      scores.close()
+      highscores.sort(reverse=True)
+      repeat += 1
     pygame.display.flip()
     if (gameVars["camY"] % 500 <= 20 and spawn == True):
       spawntiles(pygame.display.Info().current_h * -1, pygame.display.Info().current_h * -2)

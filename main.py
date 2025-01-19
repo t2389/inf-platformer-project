@@ -61,23 +61,58 @@ def spawntiles(bottomY, topY):
       guy_images[direction + str(i)] = guy_image
 '''
 play = None
-def highscore(score):
-    s = ''.join(gameVars["names"])
-    highscores = open("score.txt", "a")
-    highscores.write(s + f"{score}")
-    highscores.write("\n")
-    highscores.close()
+def highscore(score, name):
+  highscores = open("score.txt", "a")
+  highscores.write(f"{score}" + " " + f"{name}")
+  highscores.write("\n")
+  highscores.close()
+
 def scoring():
   score = int(gameVars["camY"])
   pygame.font.init()
   text = pygame.font.Font('font.ttf', 30)
   text_surface = text.render(f"{score}", False, (0, 0, 0))
   screen.blit(text_surface, (100,100))
+
 def die():
   pygame.font.init()
   text = pygame.font.Font('font.ttf', 100)
   text_surface = text.render("gameover", False, (255, 0, 0))
   screen.blit(text_surface, (pygame.display.Info().current_w / 2.7,pygame.display.Info().current_h / 4))
+def getscorename():
+  scores = open("score.txt", "r")
+  leaderboard = []
+  for line in scores:
+    leaderboard.append([int(line.split(" ")[0]), line.split(" ")[1][:-1]])
+  scores.close()
+  leaderboard = sorted(leaderboard, key = lambda x: x[0])
+  return leaderboard
+
+def displayscores():
+  highscores = getscorename()
+  highscores.reverse()
+  for i in range(0, min(len(highscores), 9)):
+    pygame.font.init()
+    text = pygame.font.Font('font.ttf', 30)
+    text_surface = text.render(f"{i + 1}. {highscores[i][0]} {highscores[i][1]}", False, (0, 0, 0)) 
+    screen.blit(text_surface, (pygame.display.Info().current_w / 2.2, pygame.display.Info().current_h / 3 + i*40))
+
+def username():
+  s = ''.join(names)
+  pygame.font.init()
+  text = pygame.font.Font('font.ttf', 30)
+  text_surface = text.render(s, False, (0, 0, 0)) 
+  screen.blit(text_surface, (pygame.display.Info().current_w / 1.5, pygame.display.Info().current_h / 2))
+
+def addscores():
+  global repeat
+  scores = open("score.txt", "r")
+  for line in scores:
+    highscores.append(int(line.split(" ")[0]))
+  scores.close()
+  highscores.sort(reverse=True)
+  repeat += 1
+
 def main():
   global play, gameVars, spawn, repeat, enter
   get_images()
@@ -85,7 +120,9 @@ def main():
     clock.tick(60)
     for event in pygame.event.get():
       if event.type == KEYDOWN and play.gameovers == True and enter == 0:
+        #s = ''.join(gameVars["names"])
         if event.key == K_RETURN:
+          highscore(round(gameVars["camY"]), str("".join(gameVars["names"])))
           enter = 1
         names.append(event.unicode)
       if event.type == QUIT:
@@ -101,23 +138,10 @@ def main():
     scoring()
     if play.gameovers == True:
       die()
-      s = ''.join(names)
-      pygame.font.init()
-      text = pygame.font.Font('font.ttf', 30)
-      text_surface = text.render(s, False, (0, 0, 0)) 
-      screen.blit(text_surface, (pygame.display.Info().current_w / 1.5, pygame.display.Info().current_h / 2))
-      for i in range(0, min(len(highscores), 9)):
-          pygame.font.init()
-          text = pygame.font.Font('font.ttf', 30)
-          text_surface = text.render(f"{i + 1}. {highscores[i]}", False, (0, 0, 0)) 
-          screen.blit(text_surface, (pygame.display.Info().current_w / 2.2, pygame.display.Info().current_h / 4 + i*40))
+      username()
+      displayscores()
     if repeat == 0 and play.gameovers == True:
-      scores = open("score.txt", "r")
-      for line in scores:
-        highscores.append(int(line[:-1]))
-      scores.close()
-      highscores.sort(reverse=True)
-      repeat += 1
+      addscores()
     pygame.display.flip()
     if (gameVars["camY"] % 500 <= 20 and spawn == True):
       spawntiles(pygame.display.Info().current_h * -1, pygame.display.Info().current_h * -2)
